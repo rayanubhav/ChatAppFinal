@@ -68,6 +68,7 @@ app.use(
     },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
+    maxAge: 86400, // Cache preflight OPTIONS responses for 24 hours (eliminates duplicate roundtrips)
   })
 );
 

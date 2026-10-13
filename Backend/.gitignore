@@ -25,3 +25,4 @@ dist-ssr
 node_modules/
 .env
 IMPROVEMENT_PLAN.md
+PROJECT_DOCUMENTATION.md

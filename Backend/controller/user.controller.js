@@ -113,7 +113,8 @@ export const getUserProfile = async (req, res) => {
       .limit(50)
       .lean();
 
-    await setCache(cacheKey, filteredUsers, 60);
+    // Cache profile list asynchronously without blocking client response
+    setCache(cacheKey, filteredUsers, 60).catch(() => {});
 
     res.status(200).json(filteredUsers);
   } catch (error) {

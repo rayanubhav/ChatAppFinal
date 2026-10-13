@@ -33,30 +33,29 @@ export const sendMessage = async (req, res) => {
       return res.status(400).json({ message: "Message cannot be empty" });
     }
 
-    let conversation = await Conversation.findOne({
-      participants: { $all: [senderId, receiverId] },
-    });
+    // Parallelize message creation and conversation thread upsert
+    const [newMessage] = await Promise.all([
+      Message.create({
+        senderId,
+        receiverId,
+        message: sanitizedContent,
+      }),
+      Conversation.updateOne(
+        { participants: { $all: [senderId, receiverId] } },
+        { $setOnInsert: { participants: [senderId, receiverId] } },
+        { upsert: true }
+      ).catch(() => {}),
+    ]);
 
-    if (!conversation) {
-      conversation = await Conversation.create({
-        participants: [senderId, receiverId],
-      });
-    }
-
-    const newMessage = await Message.create({
-      senderId,
-      receiverId,
-      message: sanitizedContent,
-    });
-
-    // Invalidate Redis cache for this pair
-    const cacheKey = getConversationCacheKey(senderId, receiverId);
-    await deleteCache(cacheKey);
-
+    // Dispatch WebSocket notification immediately
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
+
+    // Invalidate Redis cache asynchronously in background (does not block HTTP response)
+    const cacheKey = getConversationCacheKey(senderId, receiverId);
+    deleteCache(cacheKey).catch(() => {});
 
     res.status(201).json(newMessage);
   } catch (error) {
@@ -90,7 +89,8 @@ export const getMessage = async (req, res) => {
       .limit(50)
       .lean();
 
-    await setCache(cacheKey, messages, 30);
+    // Cache in Redis asynchronously without blocking client response
+    setCache(cacheKey, messages, 30).catch(() => {});
 
     res.status(200).json(messages);
   } catch (error) {

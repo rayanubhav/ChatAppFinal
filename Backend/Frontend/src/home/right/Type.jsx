@@ -81,7 +81,7 @@ function Type() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const cleanMessage = message.trim();
-    if (!cleanMessage || loading) return;
+    if (!cleanMessage) return;
 
     setShowEmojiPicker(false);
 
@@ -89,8 +89,8 @@ function Type() {
       socket.emit("stopTyping", { to: selectedConversation._id });
     }
 
-    setMessage("");
-    await sendMessages(cleanMessage);
+    setMessage(""); // Instantly clear input field
+    sendMessages(cleanMessage); // Dispatched optimistically
   };
 
   const handleTyping = (e) => {
@@ -183,15 +183,11 @@ function Type() {
         {/* Send Button */}
         <button
           type="submit"
-          disabled={loading || !message.trim()}
+          disabled={!message.trim()}
           className="p-3.5 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow-lg shadow-indigo-600/30 hover:from-indigo-500 hover:to-violet-400 active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center flex-shrink-0"
           title="Send message"
         >
-          {loading ? (
-            <span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
-          ) : (
-            <IoSend className="text-base" />
-          )}
+          <IoSend className="text-base" />
         </button>
       </form>
     </div>

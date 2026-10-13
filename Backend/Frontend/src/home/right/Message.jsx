@@ -35,13 +35,17 @@ function Message({ message }) {
         <p className="leading-relaxed whitespace-pre-wrap">{message.message}</p>
       </div>
 
-      {/* Timestamp */}
+      {/* Timestamp or sending indicator */}
       <span
-        className={`text-[10px] text-slate-400 mt-1 px-1 transition-opacity duration-200 ${
-          showTime ? "opacity-100" : "opacity-60"
+        className={`text-[10px] mt-1 px-1 transition-opacity duration-200 ${
+          message.isOptimistic
+            ? "text-indigo-400 italic opacity-90"
+            : showTime
+            ? "text-slate-400 opacity-100"
+            : "text-slate-400 opacity-60"
         }`}
       >
-        {formattedTime}
+        {message.isOptimistic ? "sending..." : formattedTime}
       </span>
     </div>
   );
