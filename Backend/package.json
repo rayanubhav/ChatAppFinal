@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "nodemon index.js",
-    "dev":"nodemon index.js",
-    "build":"npm install && npm install --prefix Frontend && npm run build --prefix Frontend"
+    "dev": "nodemon index.js",
+    "build": "npm install && npm install --prefix Frontend && npm run build --prefix Frontend"
   },
   "keywords": [
     "MERN"
@@ -15,15 +15,20 @@
   "author": "Anubhav",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
+    "compression": "^1.8.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.0",
+    "morgan": "^1.12.1",
     "nodemon": "^3.1.7",
+    "redis": "^6.3.0",
+    "sanitize-html": "^2.18.0",
     "socket.io": "^4.8.1"
   }
 }

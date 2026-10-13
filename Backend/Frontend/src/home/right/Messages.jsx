@@ -1,59 +1,97 @@
 import React, { useEffect, useRef } from "react";
 import Message from "./Message.jsx";
 import useGetMessage from "../../Context/useGetMessage.js";
-import Loading from "../../components/Loading.jsx";
 import useGetSocketMessage from "../../Context/useGetSocketMessage.js";
-// 1. Import the main 'useConversation' store hook
-import useConversation from "../../statemanage/useConversation.js"; 
+import useConversation from "../../statemanage/useConversation.js";
+import { getUserAvatar } from "../../utils/avatar.js";
+import { BsHandIndexThumb } from "react-icons/bs";
+
+// Shimmering chat bubble skeleton for conversation switching
+const MessageSkeleton = () => (
+  <div className="space-y-4 flex-1 py-4 animate-pulse">
+    {/* Received message placeholder */}
+    <div className="flex items-start gap-2.5">
+      <div className="w-8 h-8 rounded-full bg-slate-800/90 flex-shrink-0"></div>
+      <div className="space-y-1.5 max-w-[65%]">
+        <div className="h-10 w-52 bg-slate-800/80 rounded-2xl rounded-bl-xs"></div>
+        <div className="h-2 w-12 bg-slate-800/50 rounded"></div>
+      </div>
+    </div>
+
+    {/* Sent message placeholder */}
+    <div className="flex items-end justify-end gap-2.5">
+      <div className="space-y-1.5 flex flex-col items-end max-w-[65%]">
+        <div className="h-12 w-64 bg-indigo-950/60 border border-indigo-800/30 rounded-2xl rounded-br-xs"></div>
+        <div className="h-2 w-10 bg-slate-800/50 rounded"></div>
+      </div>
+    </div>
+
+    {/* Received message placeholder */}
+    <div className="flex items-start gap-2.5">
+      <div className="w-8 h-8 rounded-full bg-slate-800/90 flex-shrink-0"></div>
+      <div className="space-y-1.5 max-w-[65%]">
+        <div className="h-14 w-60 bg-slate-800/80 rounded-2xl rounded-bl-xs"></div>
+        <div className="h-2 w-14 bg-slate-800/50 rounded"></div>
+      </div>
+    </div>
+
+    {/* Sent message placeholder */}
+    <div className="flex items-end justify-end gap-2.5">
+      <div className="space-y-1.5 flex flex-col items-end max-w-[65%]">
+        <div className="h-9 w-44 bg-indigo-950/60 border border-indigo-800/30 rounded-2xl rounded-br-xs"></div>
+        <div className="h-2 w-10 bg-slate-800/50 rounded"></div>
+      </div>
+    </div>
+  </div>
+);
 
 function Messages() {
-  // 2. Call the hooks to "turn them on". They don't return state.
   useGetMessage();
   useGetSocketMessage();
-  
-  // 3. Select the state *directly* from the store
-  const { messages, isLoadingMessages } = useConversation();
 
-  const lastMsgRef = useRef();
+  const { messages, isLoadingMessages, selectedConversation } = useConversation();
+  const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    // This effect now only runs when 'messages' (from the store) changes
-    setTimeout(() => {
-      if (lastMsgRef.current) {
-        lastMsgRef.current.scrollIntoView({
-          behavior: "smooth",
-        });
-      }
-    }, 100);
-  }, [messages]);
-
-  // This safeguard ensures we always have an array
   const validMessages = Array.isArray(messages) ? messages : [];
 
-  // --- DEBUG ---
-  console.log(`%cRENDER: Messages.jsx rendering. Loading: ${isLoadingMessages}, Message Count: ${validMessages.length}`, 'color: #777');
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [validMessages.length]);
+
+  const partnerAvatar = selectedConversation
+    ? getUserAvatar(selectedConversation._id, selectedConversation.name)
+    : "";
 
   return (
-    <div
-      className="flex-1 overflow-y-auto p-4"
-    >
-      {/* 4. Use the loading state from the store */}
+    <div className="flex-1 h-full overflow-y-auto px-4 md:px-6 py-4 flex flex-col justify-between">
       {isLoadingMessages ? (
-        <Loading />
+        <MessageSkeleton />
+      ) : validMessages.length > 0 ? (
+        <div className="space-y-1.5 flex-1">
+          {validMessages.map((message) => (
+            <Message key={message._id} message={message} />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       ) : (
-        validMessages.length > 0 &&
-        validMessages.map((message) => (
-          <div key={message._id} ref={lastMsgRef}>
-            <Message message={message} />
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-6 my-auto">
+          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-indigo-500/40 mb-3 bg-[#161b22]">
+            <img
+              src={partnerAvatar}
+              alt={selectedConversation?.name}
+              className="w-full h-full object-cover"
+            />
           </div>
-        ))
-      )}
-
-      {!isLoadingMessages && validMessages.length === 0 && (
-        <div>
-          <p className="text-center mt-[20%] text-gray-400">
-            Say! Hi to start the conversation
+          <h3 className="text-base font-semibold text-white capitalize">
+            {selectedConversation?.name}
+          </h3>
+          <p className="text-xs text-slate-400 mt-1 max-w-xs">
+            This is the beginning of your direct conversation history.
           </p>
+          <div className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-600/15 border border-indigo-500/30 text-indigo-400 text-xs font-medium">
+            <BsHandIndexThumb className="rotate-90 text-sm" />
+            <span>Say hi to start chatting!</span>
+          </div>
         </div>
       )}
     </div>

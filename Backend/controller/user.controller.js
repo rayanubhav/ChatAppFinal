@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import createTokenAndSaveCookie from "../jwt/generateToken.js";
+import { getCache, setCache } from "../config/redis.js";
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
@@ -24,7 +25,7 @@ export const signup = async (req, res) => {
 
     const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "Invalid details or account already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -99,11 +100,20 @@ export const logout = (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    const loggedInUser = req.user._id;
+    const loggedInUser = req.user._id.toString();
+    const cacheKey = `users:profile:${loggedInUser}`;
+
+    const cachedUsers = await getCache(cacheKey);
+    if (cachedUsers) {
+      return res.status(200).json(cachedUsers);
+    }
+
     const filteredUsers = await User.find({ _id: { $ne: loggedInUser } })
       .select("-password")
       .limit(50)
       .lean();
+
+    await setCache(cacheKey, filteredUsers, 60);
 
     res.status(200).json(filteredUsers);
   } catch (error) {

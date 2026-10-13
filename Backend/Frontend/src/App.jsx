@@ -17,24 +17,24 @@ function App() {
           path="/"
           element={
             authUser ? (
-              <div className="drawer lg:drawer-open">
+              <div className="drawer lg:drawer-open h-screen w-screen overflow-hidden bg-[#090d16]">
                 <input
                   id="my-drawer-2"
                   type="checkbox"
                   className="drawer-toggle"
                 />
 
-                <div className="drawer-content flex flex-col">
+                <div className="drawer-content flex flex-col h-screen overflow-hidden">
                   <Right />
                 </div>
 
-                <div className="drawer-side">
+                <div className="drawer-side h-screen z-20">
                   <label
                     htmlFor="my-drawer-2"
                     aria-label="close sidebar"
                     className="drawer-overlay"
                   ></label>
-                  <div className="flex h-full w-80 bg-slate-950">
+                  <div className="h-full w-80 max-w-[85vw] bg-[#0d1117]">
                     <Left />
                   </div>
                 </div>
@@ -53,7 +53,19 @@ function App() {
           element={authUser ? <Navigate to="/" replace /> : <Signup />}
         />
       </Routes>
-      <Toaster />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#161b22",
+            color: "#e6edf3",
+            border: "1px solid #30363d",
+            fontSize: "13px",
+            borderRadius: "12px",
+            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.5)",
+          },
+        }}
+      />
     </>
   );
 }

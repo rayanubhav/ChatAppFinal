@@ -2,14 +2,13 @@ import jwt from "jsonwebtoken";
 
 const createTokenAndSaveCookie = (userId, res) => {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: "15d",
+    expiresIn: "7d",
   });
 
-  // --- THIS IS THE FIX ---
-  // We define the cookie options
+  // Cookie options
   const cookieOptions = {
     httpOnly: true, // Prevents XSS attacks
-    maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     sameSite: "strict", // Default for safety
   };
 

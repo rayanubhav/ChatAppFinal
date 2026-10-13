@@ -2,15 +2,16 @@ import React from "react";
 
 function Loading() {
   return (
-    // Updated to be a container that fits inside its parent,
-    // rather than taking the full screen.
-    <div className="flex h-64 w-full items-center justify-center">
-      <div className="flex w-52 flex-col gap-4">
-        <div className="skeleton h-32 w-full"></div>
-        <div className="skeleton h-4 w-28"></div>
-        <div className="skeleton h-4 w-full"></div>
-        <div className="skeleton h-4 w-full"></div>
-      </div>
+    <div className="flex flex-col gap-3 p-4">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="flex items-center gap-3 animate-pulse py-2 px-2">
+          <div className="w-12 h-12 rounded-full bg-slate-800/80 flex-shrink-0"></div>
+          <div className="flex-1 space-y-2">
+            <div className="h-3.5 bg-slate-800 rounded w-2/5"></div>
+            <div className="h-2.5 bg-slate-800/50 rounded w-3/4"></div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

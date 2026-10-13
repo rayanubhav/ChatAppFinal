@@ -19,6 +19,7 @@ export const SocketProvider = ({ children }) => {
       const newSocket = io(BACKEND_URL, {
         query: { userId },
         transports: ["websocket"],
+        withCredentials: true,
       });
 
       setSocket(newSocket);

@@ -1,15 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../Context/AuthProvider.jsx";
 
 function Message({ message }) {
   const [authUser] = useAuth();
   const currentUserId = authUser?.user?._id || authUser?._id;
+  const [showTime, setShowTime] = useState(false);
 
   const itsme = message?.senderId === currentUserId;
-  const chatName = itsme ? "chat-end" : "chat-start";
-  const chatColor = itsme
-    ? "bg-gradient-to-r from-blue-600 to-cyan-500"
-    : "bg-slate-700";
 
   const formattedTime = message?.createdAt
     ? new Date(message.createdAt).toLocaleTimeString([], {
@@ -21,13 +18,31 @@ function Message({ message }) {
   if (!message?.message) return null;
 
   return (
-    <div className="py-1">
-      <div className={`chat ${chatName}`}>
-        <div className={`chat-bubble text-white ${chatColor} shadow-md`}>
-          {message.message}
-        </div>
-        <div className="chat-footer opacity-50 text-xs">{formattedTime}</div>
+    <div
+      className={`flex flex-col py-1 animate-fade-in ${
+        itsme ? "items-end" : "items-start"
+      }`}
+      onMouseEnter={() => setShowTime(true)}
+      onMouseLeave={() => setShowTime(false)}
+    >
+      <div
+        className={`max-w-[75%] md:max-w-[65%] px-4 py-2.5 text-sm break-words transition-all duration-200 select-text ${
+          itsme
+            ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl rounded-br-xs shadow-md shadow-indigo-950/40"
+            : "bg-[#1e2530] text-[#e6edf3] border border-[#30363d]/70 rounded-2xl rounded-bl-xs shadow-sm"
+        }`}
+      >
+        <p className="leading-relaxed whitespace-pre-wrap">{message.message}</p>
       </div>
+
+      {/* Timestamp */}
+      <span
+        className={`text-[10px] text-slate-400 mt-1 px-1 transition-opacity duration-200 ${
+          showTime ? "opacity-100" : "opacity-60"
+        }`}
+      >
+        {formattedTime}
+      </span>
     </div>
   );
 }

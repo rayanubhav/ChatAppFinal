@@ -13,13 +13,29 @@ const profileImages = [
   "https://i.pinimg.com/736x/5d/26/ca/5d26ca3214448b5b1b029ee1fedd9fa6.jpg",
 ];
 
-export const getUserAvatar = (id) => {
+export const getUserAvatar = (id, name = "") => {
   if (!id || typeof id !== "string") return profileImages[0];
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = (hash << 5) - hash + id.charCodeAt(i);
-    hash |= 0; // Convert to 32bit integer
+    hash |= 0;
   }
   const index = Math.abs(hash) % profileImages.length;
   return profileImages[index];
+};
+
+export const getAvatarColor = (name = "") => {
+  const gradients = [
+    "from-indigo-500 to-purple-600",
+    "from-blue-500 to-cyan-500",
+    "from-emerald-500 to-teal-600",
+    "from-violet-500 to-fuchsia-600",
+    "from-rose-500 to-pink-600",
+    "from-amber-500 to-orange-600",
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return gradients[Math.abs(hash) % gradients.length];
 };

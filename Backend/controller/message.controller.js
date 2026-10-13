@@ -1,7 +1,13 @@
 import mongoose from "mongoose";
+import sanitizeHtml from "sanitize-html";
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
 import { getReceiverSocketId, io } from "../SocketIO/server.js";
+import { getCache, setCache, deleteCache } from "../config/redis.js";
+
+const getConversationCacheKey = (id1, id2) => {
+  return `messages:${[id1.toString(), id2.toString()].sort().join(":")}`;
+};
 
 export const sendMessage = async (req, res) => {
   try {
@@ -17,6 +23,16 @@ export const sendMessage = async (req, res) => {
       return res.status(400).json({ message: "Invalid receiver ID" });
     }
 
+    // Sanitize message text to prevent XSS
+    const sanitizedContent = sanitizeHtml(message.trim(), {
+      allowedTags: [],
+      allowedAttributes: {},
+    });
+
+    if (!sanitizedContent) {
+      return res.status(400).json({ message: "Message cannot be empty" });
+    }
+
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     });
@@ -30,8 +46,12 @@ export const sendMessage = async (req, res) => {
     const newMessage = await Message.create({
       senderId,
       receiverId,
-      message: message.trim(),
+      message: sanitizedContent,
     });
+
+    // Invalidate Redis cache for this pair
+    const cacheKey = getConversationCacheKey(senderId, receiverId);
+    await deleteCache(cacheKey);
 
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
@@ -53,6 +73,12 @@ export const getMessage = async (req, res) => {
       return res.status(400).json({ message: "Invalid chat user ID" });
     }
 
+    const cacheKey = getConversationCacheKey(senderId, chatUser);
+    const cachedMessages = await getCache(cacheKey);
+    if (cachedMessages) {
+      return res.status(200).json(cachedMessages);
+    }
+
     // Direct indexed query replacing expensive populate()
     const messages = await Message.find({
       $or: [
@@ -63,6 +89,8 @@ export const getMessage = async (req, res) => {
       .sort({ createdAt: 1 })
       .limit(50)
       .lean();
+
+    await setCache(cacheKey, messages, 30);
 
     res.status(200).json(messages);
   } catch (error) {

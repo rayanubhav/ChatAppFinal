@@ -1,6 +1,5 @@
-/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import { FaSearch } from "react-icons/fa";
+import { FiSearch, FiX } from "react-icons/fi";
 import userGetAllUsers from "../../Context/userGetAllUsers.jsx";
 import useConversation from "../../statemanage/useConversation.js";
 import toast from "react-hot-toast";
@@ -12,7 +11,7 @@ function Search() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!search) return;
+    if (!search.trim()) return;
 
     const conversation = allUsers.find((user) =>
       user?.name?.toLowerCase().includes(search.toLowerCase())
@@ -22,36 +21,31 @@ function Search() {
       setSelectedConversation(conversation);
       setSearch("");
     } else {
-      toast.error("User not found");
+      toast.error("No user found with that name");
     }
   };
 
   return (
-    <div className="h-auto">
-      <div className="px-6 py-4">
-        <form onSubmit={handleSubmit}>
-          <div className="flex space-x-3 items-center">
-            {/* Updated the label to be the input field itself, 
-              using the dark theme colors.
-            */}
-            <label className="flex-1">
-              <input
-                type="text"
-                className="grow outline-none bg-slate-800 text-white w-full rounded-lg p-3"
-                placeholder="Search users..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </label>
-            <button
-              type="submit"
-              className="text-white p-3 bg-blue-600 rounded-full hover:bg-blue-700 transition-all"
-            >
-              <FaSearch />
-            </button>
-          </div>
-        </form>
-      </div>
+    <div className="px-4 py-2">
+      <form onSubmit={handleSubmit} className="relative flex items-center">
+        <FiSearch className="absolute left-3.5 text-slate-400 text-lg pointer-events-none" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search conversations..."
+          className="w-full bg-[#161b22] border border-[#30363d]/80 text-sm text-slate-200 placeholder-slate-500 rounded-xl pl-10 pr-9 py-2.5 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+            className="absolute right-3 text-slate-400 hover:text-slate-200 text-sm transition-colors"
+          >
+            <FiX />
+          </button>
+        )}
+      </form>
     </div>
   );
 }
